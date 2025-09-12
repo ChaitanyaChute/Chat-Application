@@ -1,20 +1,24 @@
 import { WebSocketServer,WebSocket } from "ws";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import chatModel from "./models/chatModel.js";
 
 const wss = new WebSocketServer({port:8080});
+
+dotenv.config()
+
+const db_url = process.env.MONGODB_URL as string;
+await mongoose.connect(db_url)
 
 interface customWebSocket extends WebSocket{
     username?:string;
     currentRoom?:string | null ;
-
 }
-
 
 let userCount = 0 ;
 let users:customWebSocket[]= [];
-const rooms = new Map();
-
-
-
+const rooms = new Map<string,Set<customWebSocket>>();
+const history = new Map();
 
 wss.on("connection",(ws)=>{
 
@@ -28,7 +32,7 @@ wss.on("connection",(ws)=>{
     Customws.username = "anon";
     Customws.currentRoom = null;
 
-    Customws.on("message",(msg)=>{
+    Customws.on("message",async (msg)=>{
         const data = JSON.parse(msg.toString())
 
         if(data.type == "username"){
@@ -48,42 +52,62 @@ wss.on("connection",(ws)=>{
             const room = data.room;
 
             if(!rooms.has(room)){
-                rooms.set(room , new Set())
+                rooms.set(room , new Set());
+                history.set(room,[]);
             }
 
             Customws.currentRoom = room ;
+            rooms.get(room)!.add(Customws);
 
-            rooms.get(room).add(ws);
-
-
+            ws.send(JSON.stringify({
+                type: "history",
+                room,
+                messages: history.get(room)
+            }));
             
-            const outputData = JSON.stringify(
-                {
-                    "type": data.type,
-                    "payload": {
-                        "roomId":data.room,
-                    }
-                }
-            )
-            
-            Customws.send(outputData);
-        }
+            }
 
         if(data.type == "chat"){
-            const message = data.message;
-            
-            const outputData = JSON.stringify(
-                {
-                    "type": data.type,
-                    "payload": {
-                        "message":data.message
-                    }
-                }
-            )
-            
-            Customws.send(outputData);
-        }
+            try {
+                const message = data.message;
 
+            if(!Customws.currentRoom){
+                Customws.send("Join the room first");
+                return;
+            }
+            
+            const newMsg = {
+            
+                    from:Customws.username,
+                    message:data.message,
+                    room:Customws.currentRoom,
+                    timestamp : new Date()
+                    
+                }
+
+            history.get(Customws.currentRoom).push(newMsg);
+            if(history.get(Customws.currentRoom).length > 50){
+                history.get(Customws.currentRoom).shift()
+            }
+
+            await chatModel.create(newMsg);
+            
+            const findRoom = rooms.get(Customws.currentRoom);
+            const broadCast = JSON.stringify({ type:"message" , ...newMsg })
+            
+            findRoom?.forEach(client =>{
+                const customClient = client as customWebSocket ; 
+                if(customClient.readyState === customClient.OPEN ){
+                    customClient.send(broadCast);
+                }
+            })
+        }
+             catch (error) {
+                console.log(error);
+                
+                Customws.send(JSON.stringify(error))
+            }
+        }
     })
     
     ws.on("close",()=>{
