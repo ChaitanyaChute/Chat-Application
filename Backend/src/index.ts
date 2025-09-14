@@ -1,5 +1,4 @@
 import express from "express";
-import { json } from "stream/consumers";
 import authRouter from "./routes/authRoute.js";
 import { dbconnect } from "./libs/db.js";
 

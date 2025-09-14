@@ -3,22 +3,24 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import chatModel from "../models/chatModel.js";
 import { dbconnect } from "../libs/db.js";
+import jwt from "jsonwebtoken";
 
 const wss = new WebSocketServer({port:8080});
 
 dotenv.config()
-
 dbconnect()
 
 interface customWebSocket extends WebSocket{
     username?:string;
     currentRoom?:string | null ;
+    userId?:string;
+    authenticated?:boolean
 }
 
 let userCount = 0 ;
 let users:customWebSocket[]= [];
 const rooms = new Map<string,Set<customWebSocket>>();
-const history = new Map();
+const history = new Map<string,any[]>();
 
 wss.on("connection",(ws)=>{
 
@@ -31,9 +33,46 @@ wss.on("connection",(ws)=>{
 
     Customws.username = "anon";
     Customws.currentRoom = null;
+    Customws.authenticated = false;
 
     Customws.on("message",async (msg)=>{
         const data = JSON.parse(msg.toString())
+
+        if(data.type == "auth"){
+            try {
+                const decoded = jwt.verify(
+                    data.token,
+                    process.env.JWT_SECRET || ""
+                ) as{id:string , username:string}
+
+                Customws.username = decoded.username;
+                Customws.userId = decoded.id;
+                Customws.authenticated = true;
+                
+                Customws.send(JSON.stringify({
+                    type: "auth",
+                    success: true,
+                    username: Customws.username,
+                    })
+                )
+                return;
+
+            } catch (error) {
+                Customws.send("error in authentication")
+                console.log(error);
+                
+                Customws.send(JSON.stringify({ type: "auth", success: false }));
+                //Customws.close(1008, "Invalid token");
+                return;
+            }
+        }
+
+        if(!Customws.authenticated){
+            Customws.send(JSON.stringify({
+                error:"Authenticate First"
+            }))
+            return;
+        }
 
         if(data.type == "username"){
             Customws.username = data.username || "anon";
@@ -85,10 +124,15 @@ wss.on("connection",(ws)=>{
                     
                 }
 
-            history.get(Customws.currentRoom).push(newMsg);
-            if(history.get(Customws.currentRoom).length > 50){
-                history.get(Customws.currentRoom).shift()
+            const roomHistory = history.get(Customws.currentRoom);
+
+            if (roomHistory) {
+                roomHistory.push(newMsg);
+                if (roomHistory.length > 50) {
+                       roomHistory.shift();
+                }
             }
+
 
             await chatModel.create(newMsg);
             

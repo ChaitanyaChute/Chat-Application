@@ -1,7 +1,7 @@
 import { model, Schema } from "mongoose";
 
 
-const userSchema = new Schema({
+const authSchema = new Schema({
     username :{
         type:String,
         unique:true,
@@ -13,11 +13,11 @@ const userSchema = new Schema({
     },
     created_at:{
         type:Date,
-        default:Date.now()
+        default:Date.now
     }
 
 })
 
 
-const authModel = model("users",userSchema);
+const authModel = model("users",authSchema);
 export default authModel;
