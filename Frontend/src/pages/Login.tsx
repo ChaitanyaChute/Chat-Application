@@ -1,21 +1,18 @@
 import { useRef, useState } from 'react';
-import { Link } from 'react-router-dom'; // Standard import
+import { Link } from 'react-router-dom'; 
 import { 
   User, 
   Lock, 
   Eye, 
   EyeOff, 
   LogIn, 
-  Sparkles,
-  Github,
-  Chrome
+
 } from 'lucide-react';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Refs as per your original code
   const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
@@ -23,25 +20,20 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Access values using refs
     console.log("Username:", usernameRef.current?.value);
     console.log("Password:", passwordRef.current?.value);
 
-    // Simulate API call
     setTimeout(() => setIsLoading(false), 2000);
   };
 
   return (
     <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4 relative overflow-hidden selection:bg-[#EF3A55] selection:text-white font-sans">
-      
-      {/* Background Decor */}
+    
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#EF3A55]/10 rounded-full blur-[100px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-600/10 rounded-full blur-[100px]" />
 
-      {/* Main Card */}
       <div className="bg-[#121214]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl w-full max-w-md p-8 relative z-10">
-        
-        {/* Header */}
+     
         <div className="text-center mb-8">
           
           <h2 className="text-3xl font-bold text-white tracking-tight">Welcome Back</h2>
@@ -50,7 +42,6 @@ const Login = () => {
 
         <form onSubmit={handleLogin} className="space-y-5">
           
-          {/* Username Input */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-gray-300 ml-1">Username</label>
             <div className="relative group">
@@ -68,7 +59,6 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Password Input */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center ml-1">
                 <label className="text-xs font-medium text-gray-300">Password</label>
@@ -97,7 +87,6 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Login Button */}
           <button
             type="submit"
             disabled={isLoading}
@@ -114,7 +103,6 @@ const Login = () => {
           </button>
         </form>
 
-        {/* Divider */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-white/10"></div>
@@ -124,8 +112,6 @@ const Login = () => {
           </div>
         </div>
 
-
-        {/* Footer */}
         <div className="mt-8 text-center text-sm text-gray-400">
           Don't have an account?{' '}
           <Link 
