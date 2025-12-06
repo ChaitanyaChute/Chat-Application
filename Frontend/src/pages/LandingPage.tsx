@@ -1,0 +1,286 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+import {  ChevronRight,Video,Phone,Mic,MonitorUp,Plus,Send,Sparkles} from "lucide-react";
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+const Spotlight = ({ className, fill = "white" }: { className?: string; fill?: string }) => {
+  return (
+    <svg
+      className={cn(
+        "animate-spotlight pointer-events-none absolute z-[1] h-[169%] w-[138%] lg:w-[84%] opacity-0",
+        className
+      )}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 3787 2842"
+      fill="none"
+    >
+      <g filter="url(#filter)">
+        <ellipse
+          cx="1924.71"
+          cy="273.501"
+          rx="1924.71"
+          ry="273.501"
+          transform="matrix(-0.822377 -0.568943 -0.568943 0.822377 3631.88 2291.09)"
+          fill={fill}
+          fillOpacity="0.21"
+        ></ellipse>
+      </g>
+      <defs>
+        <filter
+          id="filter"
+          x="0.860352"
+          y="0.838989"
+          width="3785.16"
+          height="2840.26"
+          filterUnits="userSpaceOnUse"
+          colorInterpolationFilters="sRGB"
+        >
+          <feFlood floodOpacity="0" result="BackgroundImageFix"></feFlood>
+          <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+          <feGaussianBlur stdDeviation="151" result="effect1_foregroundBlur_1065_8"></feGaussianBlur>
+        </filter>
+      </defs>
+    </svg>
+  );
+};
+
+const BentoItem = ({ title, description, icon, className }: { title: string, description: string, icon: React.ReactNode, className?: string }) => {
+  return (
+    <motion.div
+      whileHover={{ scale: 0.98 }}
+      className={cn(
+        "row-span-1 rounded-xl group/bento hover:shadow-xl transition duration-200 shadow-input dark:shadow-none p-4 dark:bg-black dark:border-white/[0.2] bg-white border border-transparent justify-between flex flex-col space-y-4",
+        className
+      )}
+    >
+      <div className="group-hover/bento:translate-x-2 transition duration-200">
+        <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center border border-white/[0.1] mb-2 text-cyan-500">
+            {icon}
+        </div>
+        <div className="font-sans font-bold text-neutral-600 dark:text-neutral-200 mb-2 mt-2">
+          {title}
+        </div>
+        <div className="font-sans font-normal text-neutral-600 text-xs dark:text-neutral-300">
+          {description}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const LandingPage = () => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen bg-black/[0.96] antialiased bg-grid-white/[0.02] relative overflow-hidden font-sans selection:bg-cyan-500/30">
+      
+      <motion.div 
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="fixed top-6 inset-x-0 max-w-lg mx-auto z-50"
+      >
+        <div className="relative flex items-center justify-between px-6 py-3 rounded-full border border-white/[0.08] bg-black/50 backdrop-blur-xl shadow-[0px_0px_20px_rgba(0,0,0,0.5)]">
+            
+            <div 
+              className="flex items-center gap-3 font-bold text-white cursor-pointer group" 
+              onClick={() => navigate('/')}
+            >
+                <div className="relative flex items-center justify-center w-8 h-8">
+                  
+                </div>
+                <span className="tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400 group-hover:to-white transition-all duration-300">
+                  ChatKernel
+                </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] uppercase tracking-widest text-cyan-500/80 font-semibold bg-cyan-500/10 px-2 py-1 rounded border border-cyan-500/20 shadow-[0_0_10px_rgba(6,182,212,0.1)]">
+                Free Beta
+              </span>
+              <button 
+                  onClick={() => navigate('/login')}
+                  className="px-5 py-2 rounded-full bg-neutral-900/80 text-white text-xs font-bold border border-white/[0.1] hover:bg-neutral-800 hover:border-white/[0.2] transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+              >
+                  Login
+              </button>
+            </div>
+        </div>
+      </motion.div>
+
+      <section className="h-[40rem] w-full rounded-md flex md:items-center md:justify-center bg-black/[0.96] antialiased bg-grid-white/[0.02] relative overflow-hidden">
+        <Spotlight className="-top-40 left-0 md:left-60 md:-top-20" fill="white" />
+        
+        <div className="p-4 max-w-7xl mx-auto relative z-10 w-full pt-32 md:pt-0">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex justify-center mb-6"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/20 bg-cyan-500/10 backdrop-blur-sm">
+              <Sparkles className="w-3 h-3 text-cyan-400" />
+              <span className="text-xs font-medium text-cyan-100">Now with 4K Video Support</span>
+            </div>
+          </motion.div>
+
+          <h1 className="text-4xl md:text-7xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-50">
+            Connect with <br /> Text, Voice, & Video.
+          </h1>
+          <p className="mt-4 font-normal text-base text-neutral-300 max-w-lg text-center mx-auto">
+            ChatKernel isn't just for typing. Experience 4K video calls, crystal clear audio rooms, 
+            and low-latency screensharing.
+          </p>
+          
+          <div className="mt-8 flex justify-center gap-4">
+            <button 
+              onClick={() => navigate('/signup')}
+              className="bg-slate-800 no-underline group cursor-pointer relative shadow-2xl shadow-zinc-900 rounded-full p-px text-xs font-semibold leading-6 text-white inline-block"
+            >
+              <span className="absolute inset-0 overflow-hidden rounded-full">
+                <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              </span>
+              <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-2.5 px-6 ring-1 ring-white/10 ">
+                <span>Start chatting Free</span>
+                <ChevronRight className="w-4 h-4" />
+              </div>
+              <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black to-transparent z-0"></div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-6 py-20" id="features">
+        <div className="mb-12">
+            <h2 className="text-3xl font-bold text-white mb-2">Multi-Modal Communication</h2>
+            <p className="text-neutral-400">Everything you need to see, hear, and chat with your team.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-7xl mx-auto">
+            <BentoItem
+                title="HD Video Calling"
+                description="Up to 4K resolution with adaptive bitrate streaming. Feels like you're in the same room."
+                icon={<Video className="w-5 h-5" />}
+                className="md:col-span-1 border border-neutral-800"
+            />
+            <BentoItem
+                title="Spatial Audio Rooms"
+                description="Crystal clear voice chats with noise suppression and spatial positioning."
+                icon={<Mic className="w-5 h-5" />}
+                className="md:col-span-1 border border-neutral-800"
+            />
+             <BentoItem
+                title="Instant Screen Sharing"
+                description="Share your code or presentation in a single click with 60fps clarity."
+                icon={<MonitorUp className="w-5 h-5" />}
+                className="md:col-span-1 border border-neutral-800"
+            />
+            
+        </div>
+      </section>
+
+      <section className="py-20 bg-neutral-900/30 border-y border-white/[0.05]">
+          <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center gap-10">
+              
+              <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-white mb-4">Seamless Chat & Video Interface.</h3>
+                  <p className="text-neutral-400 mb-6">
+                      Give your users a modern experience. Text, file sharing, and 
+                      HD video calls integrated into a single, unified view.
+                  </p>
+                  
+                  <div className="flex gap-2 mb-8">
+                      <div className="h-2 w-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"/>
+                      <div className="h-2 w-2 rounded-full bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.6)]"/>
+                      <div className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"/>
+                  </div>
+              </div>
+
+              <div className="flex-1 w-full">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="rounded-2xl border border-white/[0.1] bg-black shadow-2xl overflow-hidden relative"
+                  >
+                      <div className="h-12 border-b border-white/[0.1] bg-neutral-900/50 backdrop-blur flex items-center justify-between px-4">
+                          <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500" />
+                              <div className="flex flex-col">
+                                  <span className="text-xs font-bold text-white">Michael</span>
+                                  <span className="text-[10px] text-green-400 flex items-center gap-1">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                                      Active now
+                                  </span>
+                              </div>
+                          </div>
+                          <div className="flex gap-3 text-neutral-400">
+                              <Phone className="w-4 h-4 hover:text-white cursor-pointer" />
+                              <Video className="w-4 h-4 text-red-500 animate-pulse cursor-pointer" />
+                          </div>
+                      </div>
+
+                      <div className="h-64 bg-neutral-900/20 p-4 relative flex flex-col justify-end gap-3">
+                          
+                          <motion.div 
+                            initial={{ scale: 0 }}
+                            whileInView={{ scale: 1 }}
+                            transition={{ delay: 0.4, type: "spring" }}
+                            className="absolute top-4 right-4 w-24 h-32 bg-neutral-800 rounded-lg border border-white/10 shadow-xl overflow-hidden"
+                          >
+                              <div className="absolute inset-0 bg-gradient-to-br from-neutral-700 to-neutral-800" />
+                              <div className="absolute bottom-2 left-2 text-[8px] font-bold text-white bg-black/50 px-1 rounded">You</div>
+                              <div className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full border border-black" />
+                          </motion.div>
+
+                          <div className="flex items-start gap-2 max-w-[80%]">
+                              <div className="w-6 h-6 rounded-full bg-neutral-700 flex-shrink-0" />
+                              <div className="bg-neutral-800 border border-white/5 p-2 rounded-2xl rounded-tl-none text-xs text-neutral-300">
+                                  Hey! Are we jumping on the call? 
+                              </div>
+                          </div>
+
+                          <div className="flex items-end gap-2 max-w-[80%] self-end flex-row-reverse">
+                              <div className="bg-cyan-600/20 border border-cyan-500/20 p-2 rounded-2xl rounded-tr-none text-xs text-cyan-100">
+                                  Joining right now! 🎥
+                              </div>
+                          </div>
+                      </div>
+
+                      <div className="h-12 border-t border-white/[0.1] bg-neutral-900/50 px-3 flex items-center gap-3">
+                          <div className="p-1.5 rounded-full bg-white/5 text-neutral-400">
+                            <Plus className="w-4 h-4" />
+                          </div>
+                          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                              <div className="h-full w-1/3 bg-neutral-700 rounded-full" />
+                          </div>
+                          <div className="p-1.5 rounded-full bg-cyan-500/20 text-cyan-400">
+                             <Send className="w-4 h-4" />
+                          </div>
+                      </div>
+
+                  </motion.div>
+              </div>
+          </div>
+      </section>
+
+      <footer className="py-10 bg-black text-center text-neutral-500 text-sm">
+        <div className="flex items-center justify-center gap-2 mb-4">
+             <div className="w-3 h-3 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]" />
+             <span className="font-bold text-neutral-300">ChatKernel</span>
+        </div>
+        <p>&copy; 2025 ChatKernel Inc. Crafted for connection.</p>
+      </footer>
+    </div>
+  );
+};
+
+export default LandingPage;
