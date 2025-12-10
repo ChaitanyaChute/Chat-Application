@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useWS } from "../libs/WebSockets"; 
-import MessageList from "../components/messageList";
-import MessageInput from "../components/messageInput";
+import MessageList from "../components/MessageList";
+import MessageInput from "../components/MessageInput";
 import Indicator from "../components/Indicator"; 
 import { ArrowLeft, Hash, Users, UserPlus, UserMinus, ShieldAlert, Trash2, MoreVertical,} from "lucide-react";
 
