@@ -7,6 +7,7 @@ import { WebSocketProvider } from "./libs/WebSockets";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 
+
 function App() {
   return (
     <WebSocketProvider>
