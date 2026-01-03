@@ -4,10 +4,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "nodemon": "npx tsc -b && nodemon dist/index.js",
-    "chat": "npx tsc -b && nodemon dist/chat/chat.js"
-    
+    "chat": "npx tsc -b && nodemon dist/chat/chat.js",
+  "test": "npx tsc -b && nodemon dist/index.js dist/chat/chat.js"
+
+
+
   },
   "keywords": [],
   "author": "",
@@ -26,12 +28,14 @@
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
     "@types/dotenv": "^6.1.1",
-    "@types/express": "^5.0.3",
+    "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/mongoose": "^5.11.96",
     "@types/ws": "^8.18.1",
     "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",

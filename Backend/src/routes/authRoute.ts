@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import authModel from "../models/authModel.js";
+import activityModel from "../models/activityModel.js";
+import { broadcastActivity } from "../libs/broadcast.js";
 
 dotenv.config();
 
@@ -42,9 +44,22 @@ authRouter.post("/signup", async (req, res) => {
             password: hashedPass,
         });
 
+        // Create activity for new user signup
+        const activity = await activityModel.create({
+            type: "user_signup",
+            title: "New member joined",
+            description: `@${username} just signed up`,
+            userId: newUser._id,
+            username: newUser.username,
+        });
+
+        // Broadcast to all connected users
+        await broadcastActivity(activity);
+
         res.status(201).json({
             message: "Signed up successfully",
             username: newUser.username,
+            userId: newUser._id,
         });
     } catch (error) {
         console.error("Signup error:", error);
@@ -87,6 +102,8 @@ authRouter.post("/login", async (req, res) => {
 
             return res.status(200).json({
                 token,
+                userId: user._id,
+                username: user.username,
             });
         } else {
             return res.status(401).json({
