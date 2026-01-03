@@ -1,9 +1,8 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { ChevronRight,Video,Phone,Plus,Send,Sparkles,} from "lucide-react";
+import { ChevronRight,Video,Phone,Plus,Send,Sparkles} from "lucide-react";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -47,30 +46,6 @@ const Spotlight = ({ className, fill = "white" }: { className?: string; fill?: s
         </filter>
       </defs>
     </svg>
-  );
-};
-
-const BentoItem = ({ title, description, icon, className }: { title: string, description: string, icon: React.ReactNode, className?: string }) => {
-  return (
-    <motion.div
-      whileHover={{ scale: 0.98 }}
-      className={cn(
-        "row-span-1 rounded-xl group/bento hover:shadow-xl transition duration-200 shadow-input dark:shadow-none p-4 dark:bg-black dark:border-white/[0.2] bg-white border border-transparent justify-between flex flex-col space-y-4",
-        className
-      )}
-    >
-      <div className="group-hover/bento:translate-x-2 transition duration-200">
-        <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center border border-white/[0.1] mb-2 text-cyan-500">
-            {icon}
-        </div>
-        <div className="font-sans font-bold text-neutral-600 dark:text-neutral-200 mb-2 mt-2">
-          {title}
-        </div>
-        <div className="font-sans font-normal text-neutral-600 text-xs dark:text-neutral-300">
-          {description}
-        </div>
-      </div>
-    </motion.div>
   );
 };
 
