@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import {  ChevronRight,Video,Phone,Mic,MonitorUp,Plus,Send,Sparkles} from "lucide-react";
+import { ChevronRight,Video,Phone,Plus,Send,Sparkles,} from "lucide-react";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -92,18 +92,15 @@ const LandingPage = () => {
               className="flex items-center gap-3 font-bold text-white cursor-pointer group" 
               onClick={() => navigate('/')}
             >
-                <div className="relative flex items-center justify-center w-8 h-8">
-                  
-                </div>
+                {/* Ensure /logo.png exists in your public folder, or remove this div */}
+                
                 <span className="tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400 group-hover:to-white transition-all duration-300">
-                  ChatKernel
+                  ChatHub
                 </span>
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-[10px] uppercase tracking-widest text-cyan-500/80 font-semibold bg-cyan-500/10 px-2 py-1 rounded border border-cyan-500/20 shadow-[0_0_10px_rgba(6,182,212,0.1)]">
-                Free Beta
-              </span>
+              
               <button 
                   onClick={() => navigate('/login')}
                   className="px-5 py-2 rounded-full bg-neutral-900/80 text-white text-xs font-bold border border-white/[0.1] hover:bg-neutral-800 hover:border-white/[0.2] transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]"
@@ -126,16 +123,16 @@ const LandingPage = () => {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/20 bg-cyan-500/10 backdrop-blur-sm">
               <Sparkles className="w-3 h-3 text-cyan-400" />
-              <span className="text-xs font-medium text-cyan-100">Now with 4K Video Support</span>
+              <span className="text-xs font-medium text-cyan-100">Real-time Messaging • Public & Private Rooms</span>
             </div>
           </motion.div>
 
           <h1 className="text-4xl md:text-7xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-50">
-            Connect with <br /> Text, Voice, & Video.
+            Real-time Chat <br /> That Brings People Together
           </h1>
           <p className="mt-4 font-normal text-base text-neutral-300 max-w-lg text-center mx-auto">
-            ChatKernel isn't just for typing. Experience 4K video calls, crystal clear audio rooms, 
-            and low-latency screensharing.
+            ChatHub connects teams and communities with instant messaging, organized rooms, 
+            and direct conversations. Simple, fast, and always in sync.
           </p>
           
           <div className="mt-8 flex justify-center gap-4">
@@ -158,43 +155,15 @@ const LandingPage = () => {
         <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black to-transparent z-0"></div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-6 py-20" id="features">
-        <div className="mb-12">
-            <h2 className="text-3xl font-bold text-white mb-2">Multi-Modal Communication</h2>
-            <p className="text-neutral-400">Everything you need to see, hear, and chat with your team.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-7xl mx-auto">
-            <BentoItem
-                title="HD Video Calling"
-                description="Up to 4K resolution with adaptive bitrate streaming. Feels like you're in the same room."
-                icon={<Video className="w-5 h-5" />}
-                className="md:col-span-1 border border-neutral-800"
-            />
-            <BentoItem
-                title="Spatial Audio Rooms"
-                description="Crystal clear voice chats with noise suppression and spatial positioning."
-                icon={<Mic className="w-5 h-5" />}
-                className="md:col-span-1 border border-neutral-800"
-            />
-             <BentoItem
-                title="Instant Screen Sharing"
-                description="Share your code or presentation in a single click with 60fps clarity."
-                icon={<MonitorUp className="w-5 h-5" />}
-                className="md:col-span-1 border border-neutral-800"
-            />
-            
-        </div>
-      </section>
 
       <section className="py-20 bg-neutral-900/30 border-y border-white/[0.05]">
           <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center gap-10">
               
               <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-white mb-4">Seamless Chat & Video Interface.</h3>
+                  <h3 className="text-2xl font-bold text-white mb-4">Seamless Chat Experience</h3>
                   <p className="text-neutral-400 mb-6">
-                      Give your users a modern experience. Text, file sharing, and 
-                      HD video calls integrated into a single, unified view.
+                      Beautiful, intuitive interface for messaging. Join rooms, chat with friends, 
+                      and stay connected with real-time notifications.
                   </p>
                   
                   <div className="flex gap-2 mb-8">
@@ -274,10 +243,9 @@ const LandingPage = () => {
 
       <footer className="py-10 bg-black text-center text-neutral-500 text-sm">
         <div className="flex items-center justify-center gap-2 mb-4">
-             <div className="w-3 h-3 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]" />
-             <span className="font-bold text-neutral-300">ChatKernel</span>
+             <span className="font-bold text-neutral-300">ChatHub</span>
         </div>
-        <p>&copy; 2025 ChatKernel Inc. Crafted for connection.</p>
+        <p>&copy; 2025 ChatHub. Built for real conversations.</p>
       </footer>
     </div>
   );

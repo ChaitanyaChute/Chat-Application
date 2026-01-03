@@ -1,23 +1,55 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  User, 
-  Mail, 
-  Lock, 
-  Eye, 
-  EyeOff, 
-  ArrowRight, 
-} from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { User, Lock, Eye, EyeOff } from 'lucide-react';
+import toast from "react-hot-toast"
+import axios from 'axios';
 
 function Signup() {
+  const navigate = useNavigate();
+
+  const usernameRef =useRef<HTMLInputElement>(null);
+  const passwordRef =useRef<HTMLInputElement>(null);
+
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignup = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSignup = async () => {
+    
     setIsLoading(true);
+    
+    const username = usernameRef.current?.value;
+    const password = passwordRef.current?.value;
 
-    setTimeout(() => setIsLoading(false), 2000);
+    if( !username || !password){
+      toast.error("Please fill complete details");
+      setIsLoading(false)
+      return;
+    }
+
+    try {
+      const response = await axios.post<{message: string; username: string; userId: string}>(
+        `${import.meta.env.VITE_BACKEND_URL}/auth/signup`,
+        {
+          username:username,
+          password:password
+        }
+      )
+
+      if (response.data.userId) {
+        localStorage.setItem("userId", response.data.userId);
+      }
+      
+      setIsLoading(false);
+      toast.success("Account created successfully")
+      setTimeout(()=>navigate("/login"),2000)
+      
+
+    } catch (error) {
+      console.log("error in signup function",error)
+      toast.error("Signup failed. User might already exist, please try again.");
+        setIsLoading(false)
+      
+    }
   };
 
   return (
@@ -33,8 +65,6 @@ function Signup() {
           <h2 className="text-3xl font-bold text-white tracking-tight">Create Account</h2>
           <p className="text-gray-400 text-sm mt-2">Join the community and start chatting today.</p>
         </div>
-
-        <form onSubmit={handleSignup} className="space-y-5">
           
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-gray-300 ml-1">Username</label>
@@ -45,25 +75,10 @@ function Signup() {
               <input
                 type="text"
                 name="username"
-                placeholder="johndoe"
+                placeholder="username"
                 className="w-full pl-10 pr-4 py-3 bg-[#18181b] border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#EF3A55]/50 focus:border-[#EF3A55] transition-all"
                 required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-gray-300 ml-1">Email Address</label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-500 group-focus-within:text-[#EF3A55] transition-colors" />
-              </div>
-              <input
-                type="email"
-                name="email"
-                placeholder="you@example.com"
-                className="w-full pl-10 pr-4 py-3 bg-[#18181b] border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#EF3A55]/50 focus:border-[#EF3A55] transition-all"
-                required
+                ref={usernameRef}
               />
             </div>
           </div>
@@ -80,6 +95,7 @@ function Signup() {
                 placeholder="••••••••"
                 className="w-full pl-10 pr-12 py-3 bg-[#18181b] border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-[#EF3A55]/50 focus:border-[#EF3A55] transition-all"
                 required
+                ref={passwordRef}
               />
               <button
                 type="button"
@@ -93,6 +109,7 @@ function Signup() {
 
           <button
             type="submit"
+            onClick={handleSignup}
             disabled={isLoading}
             className="w-full bg-gradient-to-r from-[#EF3A55] to-[#d02840] hover:from-[#d72d48] hover:to-[#b02237] text-white font-semibold py-3 px-4 rounded-xl transition-all transform active:scale-[0.98] shadow-lg shadow-[#EF3A55]/25 flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed mt-2"
           >
@@ -101,11 +118,9 @@ function Signup() {
             ) : (
               <>
                 Create Account
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </>
             )}
           </button>
-        </form>
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
@@ -119,7 +134,7 @@ function Signup() {
         <div className="mt-8 text-center text-sm text-gray-400">
           Already have an account?{' '}
           <Link
-            to="/auth"
+            to="/login"
             className="text-[#EF3A55] font-semibold hover:text-[#ff5c75] transition-colors"
           >
             Log in

@@ -1,26 +1,28 @@
-import { BrowserRouter, Routes } from 'react-router'
-import './App.css'
-import { Route } from 'react-router'
-import Login from './pages/Login'
-import Signup from './pages/Signup'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Dashboard from "./pages/Dashboard";
+import Room from "./pages/Room";
+import { WebSocketProvider } from "./libs/WebSockets"; 
+import LandingPage from "./pages/LandingPage";
 
 function App() {
-
-
   return (
-    <div>
-    <BrowserRouter>
-      <Routes>
-        <Route path='/auth' element={<Login />} />
-        <Route path='/auth/s' element={<Signup />} />
-        <Route path='/auth' element={<Login />} />
-
-
-      </Routes>
-    </BrowserRouter>
-      
-    </div>
-  )
+    <WebSocketProvider>
+      <BrowserRouter>
+        <Toaster position="top-right" />
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/rooms" element={<Dashboard />} />
+          <Route path="/room/:roomName" element={<Room/>} />
+          <Route path="/" element={<LandingPage/>} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </BrowserRouter>
+    </WebSocketProvider>
+  );
 }
 
-export default App
+export default App;

@@ -1,31 +1,149 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+} from "react";
 
 interface WSContextProps {
   ws: WebSocket | null;
+  isAuthed: boolean;
 }
 
-const WebSocketContext = createContext<WSContextProps>({ ws: null });
+const WebSocketContext = createContext<WSContextProps>({
+  ws: null,
+  isAuthed: false,
+});
 
 export const useWS = () => useContext(WebSocketContext);
 
-export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [ws, setWs] = useState<WebSocket | null>(null);
+  const [isAuthed, setIsAuthed] = useState(false);
+  const hasSentAuth = useRef(false);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pongTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isReconnecting = useRef(false);
 
-  useEffect(() => {
+  const connectWebSocket = () => {
+    if (isReconnecting.current) return;
+    
     const socket = new WebSocket("ws://localhost:8080");
+    let missedPongs = 0;
 
     socket.onopen = () => {
-      console.log("WebSocket connected");
+      console.log("WS Connected");
+      hasSentAuth.current = false;
+      missedPongs = 0;
+
+      const token = localStorage.getItem("token");
+      if (token && !hasSentAuth.current) {
+        socket.send(JSON.stringify({ type: "auth", token }));
+        hasSentAuth.current = true;
+      }
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === "auth") {
+          if (data.success) {
+            console.log("WS Auth success");
+            setIsAuthed(true);
+            
+            // Start ping-pong heartbeat only for authenticated users
+            if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
+            
+            pingIntervalRef.current = setInterval(() => {
+              if (socket.readyState === WebSocket.OPEN) {
+                missedPongs++;
+                
+                // If we miss 2 pongs (60 seconds), reconnect
+                if (missedPongs >= 2) {
+                  console.log("Missed pongs, reconnecting...");
+                  socket.close();
+                  return;
+                }
+                
+                socket.send(JSON.stringify({ type: "ping" }));
+              }
+            }, 30000); // Ping every 30 seconds
+          } else {
+            console.log("WS Auth failed");
+            setIsAuthed(false);
+          }
+        }
+        
+        // Reset missed pongs on any message (server is alive)
+        if (isAuthed) {
+          missedPongs = 0;
+        }
+      } catch (err) {
+        console.error("WebSocket message error:", err);
+      }
     };
 
     socket.onclose = () => {
-      console.log("WebSocket disconnected");
+      console.log("WS Disconnected");
+      setIsAuthed(false);
+      
+      // Clear intervals
+      if (pingIntervalRef.current) {
+        clearInterval(pingIntervalRef.current);
+        pingIntervalRef.current = null;
+      }
+      if (pongTimeoutRef.current) {
+        clearTimeout(pongTimeoutRef.current);
+        pongTimeoutRef.current = null;
+      }
+
+      // Only reconnect if user is logged in
+      const token = localStorage.getItem("token");
+      if (token && !isReconnecting.current) {
+        console.log("Reconnecting in 3 seconds...");
+        reconnectTimeoutRef.current = setTimeout(() => {
+          console.log("Attempting to reconnect...");
+          connectWebSocket();
+        }, 3000);
+      }
+    };
+
+    socket.onerror = (error) => {
+      console.error("WS Error:", error);
     };
 
     setWs(socket);
+    return socket;
+  };
 
-    return () => socket.close();
+  useEffect(() => {
+    const socket = connectWebSocket();
+
+    return () => {
+      isReconnecting.current = true;
+      
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (pingIntervalRef.current) {
+        clearInterval(pingIntervalRef.current);
+      }
+      if (pongTimeoutRef.current) {
+        clearTimeout(pongTimeoutRef.current);
+      }
+      
+      socket?.close();
+    };
   }, []);
 
-  return <WebSocketContext.Provider value={{ ws }}>{children}</WebSocketContext.Provider>;
+  return (
+    <WebSocketContext.Provider value={{ ws, isAuthed }}>
+      {children}
+    </WebSocketContext.Provider>
+  );
 };

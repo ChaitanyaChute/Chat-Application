@@ -1,30 +1,59 @@
 import { useRef, useState } from 'react';
-import { Link } from 'react-router-dom'; 
-import { 
-  User, 
-  Lock, 
-  Eye, 
-  EyeOff, 
-  LogIn, 
+import { Link, useNavigate } from 'react-router-dom'; 
+import { User, Lock, Eye, EyeOff, } from 'lucide-react';
+import toast from 'react-hot-toast';
+import axios from "axios"
 
-} from 'lucide-react';
+interface LoginInterface{
+  token: string;
+  username: string;
+  userId: string;
+}
 
 const Login = () => {
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const handleLogin = async() => {
+    const usernameInput = usernameRef.current?.value;
+    const password = passwordRef.current?.value;
 
-    console.log("Username:", usernameRef.current?.value);
-    console.log("Password:", passwordRef.current?.value);
+      setIsLoading(true);
 
-    setTimeout(() => setIsLoading(false), 2000);
-  };
+      if(!usernameInput || !password ){
+        toast.error("Please fill complete details")
+        setIsLoading(false);
+        return 
+      }
+      try {
+        const response = await axios.post<LoginInterface>(`${import.meta.env.VITE_BACKEND_URL}/auth/login`,{
+          username:usernameInput,
+          password:password
+        })
+
+        const token = response.data.token;
+        const userId = response.data.userId;
+        const username = response.data.username;
+
+        localStorage.setItem("token",token);
+        localStorage.setItem("userId", userId);
+        localStorage.setItem("username", username);
+
+        setIsLoading(false)
+        toast.success("Login Sucessfull");
+        navigate("/rooms")
+        
+      } catch (error) {
+        toast.error("Failed to Login, Please Try Again")
+        console.log("Error in Login function",error);
+        setIsLoading(false)
+      }
+    };
 
   return (
     <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4 relative overflow-hidden selection:bg-[#EF3A55] selection:text-white font-sans">
@@ -39,8 +68,6 @@ const Login = () => {
           <h2 className="text-3xl font-bold text-white tracking-tight">Welcome Back</h2>
           <p className="text-gray-400 text-sm mt-2">Enter your credentials to access your account.</p>
         </div>
-
-        <form onSubmit={handleLogin} className="space-y-5">
           
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-gray-300 ml-1">Username</label>
@@ -62,8 +89,7 @@ const Login = () => {
           <div className="space-y-1.5">
             <div className="flex justify-between items-center ml-1">
                 <label className="text-xs font-medium text-gray-300">Password</label>
-                {/* <a href="#" className="text-xs text-[#EF3A55] hover:text-[#ff5c75] hover:underline">Forgot password?</a> */}
-            </div>
+              </div>
             
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -89,6 +115,7 @@ const Login = () => {
 
           <button
             type="submit"
+            onClick={handleLogin}
             disabled={isLoading}
             className="w-full bg-gradient-to-r from-[#EF3A55] to-[#d02840] hover:from-[#d72d48] hover:to-[#b02237] text-white font-semibold py-3 px-4 rounded-xl transition-all transform active:scale-[0.98] shadow-lg shadow-[#EF3A55]/25 flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed mt-4"
           >
@@ -97,11 +124,9 @@ const Login = () => {
             ) : (
               <>
                 Login
-                <LogIn className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </>
             )}
           </button>
-        </form>
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
@@ -115,7 +140,7 @@ const Login = () => {
         <div className="mt-8 text-center text-sm text-gray-400">
           Don't have an account?{' '}
           <Link 
-            to="/auth/signup"
+            to="/signup"
             className="text-[#EF3A55] font-semibold hover:text-[#ff5c75] transition-colors"
           >
             Create One
