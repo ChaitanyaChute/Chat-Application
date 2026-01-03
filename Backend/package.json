@@ -4,9 +4,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "nodemon": "npx tsc -b && nodemon dist/index.js",
-    "chat": "npx tsc -b && nodemon dist/chat/chat.js",
-  "test": "npx tsc -b && nodemon dist/index.js dist/chat/chat.js"
+    "dev": "npx tsc -b && node dist/index.js",
+    "chat": "npx tsc -b && node dist/chat/chat.js"
 
 
 
