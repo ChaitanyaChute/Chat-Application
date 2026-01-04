@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useWS } from "../libs/WebSockets";
+import toast from "react-hot-toast";
 interface MessageInputProps {
   room: string;
 }
@@ -10,7 +11,12 @@ const MessageInput: React.FC<MessageInputProps> = ({ room }) => {
   const typingTimeout = useRef<number | null>(null);
 
   const sendMessage = () => {
-    if (!ws || !text.trim()) return;
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      console.error("WebSocket not connected");
+      toast.error("Not connected. Please check your connection.");
+      return;
+    }
+    if (!text.trim()) return;
 
     ws.send(
       JSON.stringify({
@@ -31,7 +37,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ room }) => {
 
   const handleTyping = (value: string) => {
     setText(value);
-    if (!ws) return;
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
 
     ws.send(JSON.stringify({ type: "typing", room, status: true }));
 

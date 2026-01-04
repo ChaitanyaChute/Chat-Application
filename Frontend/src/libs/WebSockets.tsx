@@ -32,7 +32,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
   const connectWebSocket = () => {
     if (isReconnecting.current) return;
     
-    const socket = new WebSocket("ws://localhost:8080");
+    const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:8080";
+    const socket = new WebSocket(wsUrl);
     let missedPongs = 0;
 
     socket.onopen = () => {

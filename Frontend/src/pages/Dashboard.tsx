@@ -86,7 +86,8 @@ const Dashboard: React.FC = () => {
   const [showJoinRoomModal, setShowJoinRoomModal] = useState(false);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8080");
+    const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:8080";
+    const ws = new WebSocket(wsUrl);
     socketRef.current = ws;
 
     ws.onopen = () => {
@@ -576,7 +577,7 @@ const Dashboard: React.FC = () => {
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-[#EF3A55]/5 rounded-full blur-[120px] opacity-50" />
         <div className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-violet-600/5 rounded-full blur-[120px] opacity-50" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.015]" />
       </div>
 
       <header className="h-16 flex-none z-50 backdrop-blur-xl bg-[#09090b]/80 border-b border-white/5 px-6 flex items-center justify-between">
@@ -727,7 +728,7 @@ const Dashboard: React.FC = () => {
             {!activeChat ? (
                 <div className="w-full h-full overflow-y-auto p-8 animate-in fade-in duration-500">
                     <div className="max-w-4xl mx-auto space-y-8">
-\                        <div>
+                       <div>
                             <h1 className="text-3xl font-bold text-white mb-2">Overview</h1>
                             <p className="text-zinc-400">Welcome back, {username}. You have 3 unread notifications.</p>
                         </div>
