@@ -6,6 +6,7 @@ import Room from "./pages/Room";
 import { WebSocketProvider } from "./libs/WebSockets"; 
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 
 function App() {
@@ -16,8 +17,16 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/rooms" element={<Dashboard/>} />
-          <Route path="/room/:roomName" element={<Room/>} />
+          <Route path="/rooms" element={
+            <ProtectedRoute>
+              <Dashboard/>
+            </ProtectedRoute>
+          } />
+          <Route path="/room/:roomName" element={
+            <ProtectedRoute>
+              <Room/>
+            </ProtectedRoute>
+          } />
           <Route path="/" element={<LandingPage/>} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

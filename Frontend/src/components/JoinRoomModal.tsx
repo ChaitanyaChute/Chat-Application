@@ -98,7 +98,7 @@ const JoinRoomModal: React.FC<JoinRoomModalProps> = ({
 
       if (response.data.success) {
         toast.success(`Joined ${response.data.room.name} successfully!`);
-        // Update joined rooms list
+        
         await fetchJoinedRooms();
         onRoomJoined();
       }

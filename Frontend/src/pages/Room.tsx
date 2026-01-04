@@ -6,6 +6,7 @@ import MessageInput from "../components/MessageInput";
 import Indicator from "../components/Indicator"; 
 import { ArrowLeft, Hash, Users, UserPlus, UserMinus, ShieldAlert, Trash2, MoreVertical,} from "lucide-react";
 
+
 const Room: React.FC = () => {
   const { roomName } = useParams<{ roomName: string }>();
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const Room: React.FC = () => {
         <div className="text-center">
             <Hash className="w-12 h-12 mx-auto mb-4 opacity-20" />
             <p>No room selected</p>
-            <button onClick={() => navigate('/')} className="mt-4 text-[#EF3A55] hover:underline">Go Home</button>
+            <button onClick={() => navigate('/rooms')} className="mt-4 text-[#EF3A55] hover:underline">Go to Dashboard</button>
         </div>
       </div>
     );
@@ -47,7 +48,7 @@ const Room: React.FC = () => {
 
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/rooms")}
             className="p-2 -ml-2 rounded-full text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
             title="Back to Dashboard"
           >

@@ -44,9 +44,10 @@ function Signup() {
       setTimeout(()=>navigate("/login"),2000)
       
 
-    } catch (error) {
+    } catch (error: any) {
       console.log("error in signup function",error)
-      toast.error("Signup failed. User might already exist, please try again.");
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || "Signup failed. User might already exist, please try again.";
+      toast.error(errorMessage);
         setIsLoading(false)
       
     }

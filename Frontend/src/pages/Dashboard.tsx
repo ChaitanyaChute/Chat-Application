@@ -10,7 +10,6 @@ import CreateRoomModal from "../components/CreateRoomModal";
 import JoinRoomModal from "../components/JoinRoomModal";
 import toast from "react-hot-toast";
 
-// -------- TYPES ----------
 interface Room {
   _id: string;
   name: string;
@@ -20,7 +19,7 @@ interface Room {
 }
 
 interface ChatSession {
-  id: string;          // userId for DM, roomId for room
+  id: string;
   name: string;
   type: "dm" | "room";
   description?: string;
@@ -65,7 +64,6 @@ const Dashboard: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeChatRef = useRef<ChatSession | null>(null);
 
-  // ========= STATE =========
   const [rooms, setRooms] = useState<Room[]>([]);
   const [dmList, setDmList] = useState<ChatSession[]>([]);
   const [tab, setTab] = useState<"dm" | "room">("dm");
@@ -73,27 +71,20 @@ const Dashboard: React.FC = () => {
   const [activeChat, setActiveChat] = useState<ChatSession | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   
-  // Keep ref in sync with state
   useEffect(() => {
     activeChatRef.current = activeChat;
   }, [activeChat]);
   const [messageInput, setMessageInput] = useState("");
   
-  // Activity states
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   
-  // Search and DM states
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   
-  // Modal states
   const [showCreateRoomModal, setShowCreateRoomModal] = useState(false);
   const [showJoinRoomModal, setShowJoinRoomModal] = useState(false);
 
-  // ================================================================
-  // 🔌 CONNECT TO WEBSOCKET + AUTH
-  // ================================================================
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:8080");
     socketRef.current = ws;
@@ -107,28 +98,28 @@ const Dashboard: React.FC = () => {
       const data = JSON.parse(event.data);
       console.log("WebSocket message:", data);
 
-      // ─── Authentication Response ───
       if (data.type === "auth") {
         if (data.success) {
           console.log("Authenticated as:", data.username);
+          toast.success(`Connected as ${data.username}`);
         } else {
           console.error("Authentication failed:", data.reason);
+          toast.error("Authentication failed. Please login again.");
+          setTimeout(() => {
+            handleLogout();
+          }, 2000);
         }
         return;
       }
 
-      // ─── Error Response ───
       if (data.type === "error") {
         console.error("Server error:", data.message);
-        alert(data.message);
-        // Reset to no active chat
+        toast.error(data.message || "An error occurred");
         setActiveChat(null);
         return;
       }
 
-      // ─── Room Message ───
       if (data.type === "message") {
-        // Move this room to the top of the list
         setRooms(prev => {
           const roomIndex = prev.findIndex(r => r.name === data.room);
           if (roomIndex > 0) {
@@ -139,7 +130,6 @@ const Dashboard: React.FC = () => {
           return prev;
         });
 
-        // Only add to messages if we're in the correct room
         if (activeChatRef.current?.type === "room" && activeChatRef.current.name === data.room) {
           setMessages(prev => [
             ...prev,
@@ -153,19 +143,15 @@ const Dashboard: React.FC = () => {
         }
       }
 
-      // ─── Direct Message (DM) ───
       if (data.type === "dm") {
         console.log("DM received:", data);
         console.log("Active chat:", activeChatRef.current);
         
-        // Determine the other user in this conversation
         const otherUserId = data.fromUserId === userId ? data.toUserId : data.fromUserId;
         const otherUsername = data.fromUserId === userId ? data.toUsername : data.fromUsername;
         
-        // Check if this DM is for the currently active chat
         const isForCurrentChat = activeChatRef.current?.type === "dm" && activeChatRef.current.id === otherUserId;
         
-        // Always add message if it's for the current chat
         if (isForCurrentChat) {
           setMessages(prev => [
             ...prev,
@@ -178,12 +164,10 @@ const Dashboard: React.FC = () => {
           ]);
         }
         
-        // Always update DM list with latest message and move to top
         setDmList(prev => {
           const existing = prev.find(dm => dm.id === otherUserId);
           
           if (existing) {
-            // Update existing DM conversation and move to top
             const filtered = prev.filter(dm => dm.id !== otherUserId);
             const updatedDm: ChatSession = {
               ...existing,
@@ -192,7 +176,6 @@ const Dashboard: React.FC = () => {
             };
             return [updatedDm, ...filtered];
           } else {
-            // Add new DM conversation at top
             const newDm: ChatSession = {
               id: otherUserId,
               name: otherUsername || "User",
@@ -205,7 +188,6 @@ const Dashboard: React.FC = () => {
         });
       }
 
-      // ─── Room History ───
       if (data.type === "history") {
         setMessages(
           data.messages.map((m: any) => ({
@@ -217,9 +199,7 @@ const Dashboard: React.FC = () => {
         );
       }
 
-      // ─── Activity Update ───
       if (data.type === "activity") {
-        // Don't show user's own activities to themselves
         if (data.activity.userId && data.activity.userId === userId) {
           console.log("Skipping own activity notification");
           return;
@@ -227,21 +207,17 @@ const Dashboard: React.FC = () => {
         
         const newActivity = formatActivity(data.activity);
         setActivities(prev => {
-          // Check if activity already exists
           const exists = prev.some(a => a.id === newActivity.id);
           if (exists) return prev;
           
-          // Add new activity at the top
           return [newActivity, ...prev].slice(0, 20);
         });
         
-        // Also refetch rooms if it's a room creation
         if (data.activity.type === "room_created") {
           fetchRooms();
         }
       }
 
-      // ─── Room Update (Online Count) ───
       if (data.type === "room_update") {
         console.log("Room update:", data);
         setRooms(prev => prev.map(room => 
@@ -251,11 +227,8 @@ const Dashboard: React.FC = () => {
         ));
       }
 
-      // ─── New Message Notification ───
       if (data.type === "new_message") {
         console.log("New message notification:", data.data);
-        // You can add toast notification or badge update here
-        // For now, we'll just log it as it's already handled by message/dm events
       }
     };
 
@@ -265,9 +238,18 @@ const Dashboard: React.FC = () => {
     return () => ws.close();
   }, [token, username]);
 
-  // ================================================================
-  // 📡 LOAD REAL DATA FROM API
-  // ================================================================
+  const handleLogout = () => {
+    if (socketRef.current) {
+      socketRef.current.close();
+    }
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("username");
+    
+    toast.success("Logged out successfully");
+    navigate("/");
+  };
+
   useEffect(() => {
     fetchRooms();
     fetchActivities();
@@ -292,6 +274,7 @@ const Dashboard: React.FC = () => {
       }
     } catch (error) {
       console.error("Error fetching rooms:", error);
+      toast.error("Failed to load rooms");
     }
   };
 
@@ -311,10 +294,11 @@ const Dashboard: React.FC = () => {
       }
     } catch (error) {
       console.error("Error fetching DMs:", error);
+      toast.error("Failed to load direct messages");
     }
   };
 
-  // Fetch recent activities from backend
+  
   const fetchActivities = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -332,10 +316,10 @@ const Dashboard: React.FC = () => {
       }
     } catch (error) {
       console.error("Error fetching activities:", error);
+      toast.error("Failed to load activities");
     }
   };
 
-  // Format activity for display
   const formatActivity = (activity: any): ActivityItem => {
     const getIcon = () => {
       switch (activity.type) {
@@ -378,7 +362,6 @@ const Dashboard: React.FC = () => {
     };
   };
 
-  // Search users for DM
   const searchUsers = async (query: string) => {
     if (!query.trim()) {
       setSearchResults([]);
@@ -407,7 +390,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Handle search input with debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       if (tab === "dm") {
@@ -418,16 +400,9 @@ const Dashboard: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchQuery, tab]);
 
-  // ================================================================
-  // AUTO SCROLL
-  // ================================================================
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
-
-  // ================================================================
-  // OPEN ROOM
-  // ================================================================
   const openRoom = (room: Room) => {
     setActiveChat({
       id: room._id,
@@ -439,7 +414,6 @@ const Dashboard: React.FC = () => {
     setSearchQuery("");
     setSearchResults([]);
 
-    // Wait for WebSocket to be ready before joining
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify({
         type: "join",
@@ -447,17 +421,12 @@ const Dashboard: React.FC = () => {
       }));
     }
   };
-
-  // ================================================================
-  // OPEN DM
-  // ================================================================
   const openDM = async (dm: ChatSession) => {
     setActiveChat(dm);
     setMessages([]);
     setSearchQuery("");
     setSearchResults([]);
     
-    // Load DM history from backend
     if (userId && dm.id) {
       try {
         const token = localStorage.getItem("token");
@@ -487,10 +456,6 @@ const Dashboard: React.FC = () => {
       }
     }
   };
-
-  // ================================================================
-  // START DM FROM SEARCH
-  // ================================================================
   const startDMWithUser = async (user: User) => {
     setActiveChat({
       id: user._id,
@@ -504,8 +469,6 @@ const Dashboard: React.FC = () => {
     setSearchQuery("");
     setSearchResults([]);
     setTab("dm");
-    
-    // Load DM history if any exists
     if (userId && user._id) {
       try {
         const token = localStorage.getItem("token");
@@ -535,17 +498,13 @@ const Dashboard: React.FC = () => {
       }
     }
   };
-
-  // ================================================================
-  // SEND MESSAGE
-  // ================================================================
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageInput.trim() || !activeChat) return;
 
-    // Check WebSocket connection
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
       console.error("WebSocket not connected");
+      toast.error("Not connected. Please check your connection.");
       return;
     }
 
@@ -572,12 +531,8 @@ const Dashboard: React.FC = () => {
   };
 
   const closeChat = () => setActiveChat(null);
-
-  // ================================================================
-  // LEAVE ROOM
-  // ================================================================
   const handleLeaveRoom = async (roomId: string, roomName: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent opening the room
+    e.stopPropagation();
     
     if (!confirm(`Are you sure you want to leave #${roomName}?`)) {
       return;
@@ -586,10 +541,8 @@ const Dashboard: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       
-      // Optimistically remove from UI
       setRooms(prev => prev.filter(r => r._id !== roomId));
       
-      // If currently viewing this room, close it
       if (activeChat?.type === "room" && activeChat.id === roomId) {
         setActiveChat(null);
       }
@@ -607,34 +560,25 @@ const Dashboard: React.FC = () => {
       if ((response.data as any).success) {
         toast.success(`Left #${roomName}`);
       } else {
-        // If failed, revert by fetching rooms again
         fetchRooms();
         toast.error((response.data as any).message || "Failed to leave room");
       }
     } catch (error: any) {
       console.error("Leave room error:", error);
-      // Revert optimistic update by refetching
       fetchRooms();
       const message = error.response?.data?.message || error.response?.data?.error || "Failed to leave room";
       toast.error(message);
     }
   };
 
-  // =================================================================
-  // 🎨 UI — EXACTLY YOUR DESIGN (unchanged — only data wired)
-  // =================================================================
-
   return (
     <div className="h-screen bg-[#09090b] text-zinc-100 flex flex-col font-sans selection:bg-[#EF3A55] selection:text-white overflow-hidden">
-      
-      {/* --- Ambient Background --- */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-[#EF3A55]/5 rounded-full blur-[120px] opacity-50" />
         <div className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] bg-violet-600/5 rounded-full blur-[120px] opacity-50" />
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay"></div>
       </div>
 
-      {/* --- Navbar --- */}
       <header className="h-16 flex-none z-50 backdrop-blur-xl bg-[#09090b]/80 border-b border-white/5 px-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="relative group">
@@ -645,27 +589,19 @@ const Dashboard: React.FC = () => {
           </span>
         </div>
 
-        {/* <div className="hidden md:flex items-center gap-2 bg-white/5 border border-white/5 rounded-full px-4 py-1.5 text-sm text-zinc-400 w-64 hover:bg-white/10 transition-colors cursor-text">
-            <Search className="w-3.5 h-3.5" />
-            <span>Search...</span>
-        </div> */}
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3 pl-2">
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-zinc-700 to-zinc-600 flex items-center justify-center ring-2 ring-white/5">
               <span className="text-xs font-bold">{username[0]?.toUpperCase()}</span>
             </div>
-            <button onClick={() => navigate("/")} className="text-zinc-500 hover:text-[#EF3A55] transition-colors">
+            <button onClick={handleLogout} className="text-zinc-500 hover:text-[#EF3A55] transition-colors">
               <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>
       </header>
-
-      {/* --- Main Layout --- */}
       <main className="flex-1 flex z-10 overflow-hidden">
-        
-        {/* === LEFT SIDEBAR === */}
         <aside className="w-80 flex-none bg-[#0c0c0e]/50 backdrop-blur-md border-r border-white/5 flex flex-col">
           <div className="p-4 pb-2">
             <div className="bg-zinc-900/80 p-1 rounded-xl flex border border-white/5 relative">
@@ -684,7 +620,6 @@ const Dashboard: React.FC = () => {
           <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1 scrollbar-thin scrollbar-thumb-white/10">
             {tab === "dm" ? (
                 <>
-                {/* DM Search */}
                 <div className="px-2 mb-3">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -697,8 +632,6 @@ const Dashboard: React.FC = () => {
                     />
                   </div>
                 </div>
-
-                {/* Search Results */}
                 {searchQuery && (
                   <>
                     <p className="px-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">Search Results</p>
@@ -729,7 +662,6 @@ const Dashboard: React.FC = () => {
                   </>
                 )}
 
-                {/* Existing DMs */}
                 {!searchQuery && (
                   <>
                     <p className="px-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 mt-2">Direct Messages</p>
@@ -789,23 +721,16 @@ const Dashboard: React.FC = () => {
           </div>
         </aside>
 
-        {/* === MAIN CONTENT AREA === */}
+        
         <div className="flex-1 flex min-w-0 bg-[#09090b]/20 relative">
         
             {!activeChat ? (
-                // ------------------------------------
-                // DASHBOARD VIEW
-                // ------------------------------------
                 <div className="w-full h-full overflow-y-auto p-8 animate-in fade-in duration-500">
                     <div className="max-w-4xl mx-auto space-y-8">
-                        
-                        {/* Header */}
-                        <div>
+\                        <div>
                             <h1 className="text-3xl font-bold text-white mb-2">Overview</h1>
                             <p className="text-zinc-400">Welcome back, {username}. You have 3 unread notifications.</p>
                         </div>
-
-                        {/* Stats Row */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="bg-[#121214]/50 border border-white/5 p-6 rounded-2xl flex items-center justify-between">
                                 <div>
@@ -827,9 +752,9 @@ const Dashboard: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Actions Row */}
+                        
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Create Room */}
+                            
                             <div className="group relative overflow-hidden bg-gradient-to-br from-[#121214] to-zinc-900 border border-white/5 p-6 rounded-2xl hover:border-[#EF3A55]/50 transition-all cursor-pointer" onClick={() => setShowCreateRoomModal(true)}>
                                 <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                                     <Plus className="w-32 h-32 -mr-8 -mt-8" />
@@ -848,7 +773,7 @@ const Dashboard: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Join Room */}
+                            
                             <div className="group relative overflow-hidden bg-gradient-to-br from-[#121214] to-zinc-900 border border-white/5 p-6 rounded-2xl hover:border-purple-500/50 transition-all cursor-pointer" onClick={() => setShowJoinRoomModal(true)}>
                                 <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                                     <Compass className="w-32 h-32 -mr-8 -mt-8" />
@@ -868,7 +793,7 @@ const Dashboard: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Combined Activity & Notifications */}
+                        
                         <div className="bg-[#121214]/80 backdrop-blur-sm border border-white/5 rounded-3xl p-6">
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
@@ -906,13 +831,10 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
             ) : (
-                // ------------------------------------
-                // CHAT VIEW WITH ACTIVITY PANEL
-                // ------------------------------------
                 <>
-                    {/* Chat Area */}
+                    
                     <section className="flex-1 flex flex-col min-w-0">
-                        {/* Chat Header */}
+                        
                         <div className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-[#09090b]/40 backdrop-blur-sm">
                             <div className="flex items-center gap-3">
                                 {activeChat.type === 'room' ? <Hash className="text-[#EF3A55]" /> : <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"/>}
@@ -936,7 +858,7 @@ const Dashboard: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Messages List */}
+                        
                         <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-white/10" ref={scrollRef}>
                              <div className="flex justify-center my-6">
                                 <span className="bg-white/5 text-zinc-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Today</span>
@@ -965,7 +887,7 @@ const Dashboard: React.FC = () => {
                             ))}
                         </div>
 
-                        {/* Input Area */}
+                        
                         <div className="p-4 pb-6 bg-[#09090b]/80 backdrop-blur-md border-t border-white/5">
                             <form 
                                 onSubmit={handleSendMessage}
@@ -995,7 +917,7 @@ const Dashboard: React.FC = () => {
                         </div>
                     </section>
 
-                    {/* Right Sidebar - Recent Activity */}
+                    
                     <aside className="w-80 flex-none bg-[#0c0c0e]/50 backdrop-blur-md border-l border-white/5 p-4 hidden xl:flex flex-col overflow-hidden">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
@@ -1037,7 +959,7 @@ const Dashboard: React.FC = () => {
         </div>
       </main>
 
-      {/* Modals */}
+      
       <CreateRoomModal 
         isOpen={showCreateRoomModal}
         onClose={() => setShowCreateRoomModal(false)}

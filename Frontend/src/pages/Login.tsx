@@ -48,8 +48,9 @@ const Login = () => {
         toast.success("Login Sucessfull");
         navigate("/rooms")
         
-      } catch (error) {
-        toast.error("Failed to Login, Please Try Again")
+      } catch (error: any) {
+        const errorMessage = error.response?.data?.message || error.response?.data?.error || "Failed to Login, Please Try Again";
+        toast.error(errorMessage);
         console.log("Error in Login function",error);
         setIsLoading(false)
       }

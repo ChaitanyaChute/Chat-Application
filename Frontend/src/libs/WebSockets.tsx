@@ -56,14 +56,14 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
             console.log("WS Auth success");
             setIsAuthed(true);
             
-            // Start ping-pong heartbeat only for authenticated users
+            
             if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
             
             pingIntervalRef.current = setInterval(() => {
               if (socket.readyState === WebSocket.OPEN) {
                 missedPongs++;
                 
-                // If we miss 2 pongs (60 seconds), reconnect
+                
                 if (missedPongs >= 2) {
                   console.log("Missed pongs, reconnecting...");
                   socket.close();
@@ -72,14 +72,14 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
                 
                 socket.send(JSON.stringify({ type: "ping" }));
               }
-            }, 30000); // Ping every 30 seconds
+            }, 30000); 
           } else {
             console.log("WS Auth failed");
             setIsAuthed(false);
           }
         }
         
-        // Reset missed pongs on any message (server is alive)
+        
         if (isAuthed) {
           missedPongs = 0;
         }
@@ -92,7 +92,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log("WS Disconnected");
       setIsAuthed(false);
       
-      // Clear intervals
+      
       if (pingIntervalRef.current) {
         clearInterval(pingIntervalRef.current);
         pingIntervalRef.current = null;
@@ -102,7 +102,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
         pongTimeoutRef.current = null;
       }
 
-      // Only reconnect if user is logged in
+      
       const token = localStorage.getItem("token");
       if (token && !isReconnecting.current) {
         console.log("Reconnecting in 3 seconds...");

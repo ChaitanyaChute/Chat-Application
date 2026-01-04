@@ -1,11 +1,12 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 
-// Create axios instance with default config
+
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,
 });
 
-// Add request interceptor to include token
+
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -19,15 +20,16 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Add response interceptor to handle auth errors
+
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
+      
       localStorage.removeItem("token");
       localStorage.removeItem("userId");
       localStorage.removeItem("username");
+      toast.error("Session expired. Please login again.");
       window.location.href = "/login";
     }
     return Promise.reject(error);
